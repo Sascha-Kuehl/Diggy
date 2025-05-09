@@ -16,16 +16,16 @@ end
 if script.active_mods['Krastorio2'] then
     return {
         ammo = {
-            ['rifle-magazine'] = true,
-            ['armor-piercing-rifle-magazine'] = true,
-            ['uranium-rifle-magazine'] = true,
-            ['imersite-rifle-magazine'] = true,
+            ['kr-rifle-magazine'] = true,
+            ['kr-armor-piercing-rifle-magazine'] = true,
+            ['kr-uranium-rifle-magazine'] = true,
+            ['kr-imersite-rifle-magazine'] = true,
         },
         locale = {
-            ['rifle-magazine'] = {'item-name.rifle-magazine'},
-            ['armor-piercing-rifle-magazine'] = {'item-name.armor-piercing-rifle-magazine'},
-            ['uranium-rifle-magazine'] = {'item-name.uranium-rifle-magazine'},
-            ['imersite-rifle-magazine'] = {'item-name.imersite-rifle-magazine'},
+            ['kr-rifle-magazine'] = {'item-name.kr-rifle-magazine'},
+            ['kr-armor-piercing-rifle-magazine'] = {'item-name.kr-armor-piercing-rifle-magazine'},
+            ['kr-uranium-rifle-magazine'] = {'item-name.kr-uranium-rifle-magazine'},
+            ['kr-imersite-rifle-magazine'] = {'item-name.kr-imersite-rifle-magazine'},
         }
     }
 end
