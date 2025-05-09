@@ -95,4 +95,7 @@ return [[
   2025-02-19:
       - [DO:OneDirection] Fixed terraforming bounds
       - [DO:OneDirectionWide] Fixed terraforming bounds
+
+  2025-05-09:
+      - [DO:Krastorio2] Updated to 2.0
 ]]

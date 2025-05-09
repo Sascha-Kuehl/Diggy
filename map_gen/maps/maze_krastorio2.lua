@@ -1,3 +1,4 @@
+local Config = require 'config'
 local Event = require 'utils.event'
 local Global = require 'utils.global'
 local Retailer = require 'features.retailer'
@@ -30,6 +31,8 @@ ScenarioInfo.set_map_extra_info([[
 ScenarioInfo.set_new_info([[
   2024-07-31:
     - Added Krastorio2 maze scenario: Daedalus' Domain
+  2025-05-09:
+    - Updated to Factorio 2.0
 ]])
 
 local insert = table.insert
@@ -65,6 +68,15 @@ Global.register(
   end
 )
 
+Config.player_create.starting_items = {
+  { name = 'iron-gear-wheel', count = 8 },
+  { name = 'iron-plate', count = 16 },
+  { name = 'kr-shelter', count = 1 },
+  { name = 'burner-mining-drill', count = 1 },
+  { name = 'stone-furnace', count = 1 },
+  { name = 'wood', count = 10 },
+}
+
 local k2_items = {
   {
     name = 'temporary-running-speed-bonus',
@@ -99,23 +111,24 @@ local k2_items = {
   { price = 30,   name = 'cargo-wagon' },
   { price = 2800, name = 'artillery-wagon' },
 
+  { price = 1,    name = 'firearm-magazine' },
   { price = 15,   name = 'submachine-gun' },
   { price = 15,   name = 'shotgun' },
   { price = 250,  name = 'combat-shotgun' },
   { price = 250,  name = 'flamethrower' },
   { price = 175,  name = 'rocket-launcher' },
-  { price = 375,  name = 'heavy-rocket-launcher' },
+  { price = 375,  name = 'kr-heavy-rocket-launcher' },
 
   { price = 2,    name = 'shotgun-shell' },
   { price = 10,   name = 'piercing-shotgun-shell' },
 
-  { price = 2,    name = 'rifle-magazine' },
-  { price = 8,    name = 'armor-piercing-rifle-magazine' },
-  { price = 25,   name = 'uranium-rifle-magazine' },
+  { price = 2,    name = 'kr-rifle-magazine' },
+  { price = 8,    name = 'kr-armor-piercing-rifle-magazine' },
+  { price = 25,   name = 'kr-uranium-rifle-magazine' },
 
-  { price = 5,    name = 'anti-material-rifle-magazine' },
-  { price = 12,   name = 'armor-piercing-anti-material-rifle-magazine' },
-  { price = 35,   name = 'uranium-anti-material-rifle-magazine' },
+  { price = 5,    name = 'kr-anti-materiel-rifle-magazine' },
+  { price = 12,   name = 'kr-armor-piercing-anti-materiel-rifle-magazine' },
+  { price = 35,   name = 'kr-uranium-anti-materiel-rifle-magazine' },
 
   { price = 30,   name = 'flamethrower-ammo' },
 
@@ -124,12 +137,12 @@ local k2_items = {
   { price = 85,   name = 'explosive-uranium-cannon-shell' },
 
   { price = 120,  name = 'artillery-shell' },
-  { price = 1200, name = 'nuclear-artillery-shell' },
+  { price = 1200, name = 'kr-nuclear-artillery-shell' },
 
   { price = 18,   name = 'rocket' },
   { price = 30,   name = 'explosive-rocket' },
 
-  { price = 250,  name = 'heavy-rocket' },
+  { price = 250,  name = 'kr-heavy-rocket' },
   { price = 2500, name = 'atomic-bomb' },
 
   { price = 5,    name = 'land-mine' },
@@ -158,7 +171,7 @@ local k2_items = {
   { price = 550,  name = 'energy-shield-equipment' },
   { price = 950,  name = 'personal-laser-defense-equipment' },
 
-  { price = 800,  name = 'dt-fuel' },
+  { price = 800,  name = 'kr-dt-fuel-cell' },
 }
 
 local function add_tile(x, y, width, height, add_cell)
@@ -266,7 +279,8 @@ local function remove_chunk(event)
 end
 
 Event.on_init(function()
-  if Retailer.get_market_group_label('fish_market') ~= 'Market' then
+  -- Setup market
+  if Retailer.get_market_group_label('fish_market') == 'Market' then
     local fish_items = Retailer.get_items('fish_market')
 
     for _, prototype in pairs(fish_items) do
@@ -278,11 +292,39 @@ Event.on_init(function()
     end
   end
 
+  -- Setup maze
   primitives.walk_seed_w = math_random(1, MAZE_SIZE) * 2
   primitives.walk_seed_h = math_random(1, MAZE_SIZE) * 2
   make_maze(MAZE_SIZE, MAZE_SIZE)
   reduce_walls()
   render()
+
+  -- Setup starting area
+  local surface = RS.get_surface()
+  local find = surface.find_non_colliding_position
+  local create = surface.create_entity
+
+  surface.request_to_generate_chunks({ 0, 0 }, 1)
+  surface.force_generate_chunk_requests()
+
+  local wreck = { force = 'player', snap_to_grid = true, move_stuck_players = true }
+  for _, name in pairs({
+    'kr-spaceship-material-fabricator-1',
+    'kr-spaceship-material-fabricator-1',
+    'kr-spaceship-material-fabricator-2',
+    'kr-spaceship-material-fabricator-2',
+    'kr-spaceship-reactor',
+    'kr-spaceship-research-computer',
+  }) do
+    wreck.name = name
+    wreck.position = find(wreck.name, {
+      x = -16 + math_random(32),
+      y = -16 + math_random(32),
+    }, 32, 0.5, true)
+    if wreck.position then
+      create(wreck)
+    end
+  end
 end)
 
 Event.add(defines.events.on_chunk_generated, function(event)
