@@ -33,15 +33,14 @@ DOC.compatibility.deadlock.items = require 'map_gen.maps.danger_ores.compatibili
 DOC.game.technology_price_multiplier = 5
 DOC.map_config.spawn_tile = 'landfill'
 DOC.map_config.main_ores = require 'map_gen.maps.danger_ores.compatibility.krastorio2.ores'
-DOC.map_config.resource_patches_config = require 'map_gen.maps.danger_ores.compatibility.krastorio2.resource_patches'
 DOC.map_gen_settings.settings = H.empty_map_settings{
   'coal',
   'copper-ore',
   'crude-oil',
-  'imersite',
+  'kr-imersite',
   'iron-ore',
-  'mineral-water',
-  'rare-metals',
+  'kr-mineral-water',
+  'kr-rare-metal-ore',
   'stone',
   'uranium-ore',
 }
