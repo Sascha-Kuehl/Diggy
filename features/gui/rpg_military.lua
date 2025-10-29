@@ -365,7 +365,7 @@ end
 
 Manager.check_player_level = function(player)
     local record = get_or_create_record(player.index)
-    if record.level <= MAX_LEVEL and record.xp >= LEVEL_XP[record.level] then
+    if record.level < MAX_LEVEL and record.xp >= LEVEL_XP[record.level] then
         Manager.on_player_level_up(player)
         return true
     end
