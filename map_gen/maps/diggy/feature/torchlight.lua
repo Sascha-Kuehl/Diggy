@@ -318,17 +318,6 @@ function Torchlight.register()
 end
 
 function Torchlight.on_init()
-    local surface = RS.get_surface()
-
-    rendering.draw_light
-        {
-            sprite = 'utility/light_medium',
-            scale = 2.5,
-            color = {255,255,255},
-            surface = surface,
-            target = {x = 0, y = 0}
-        }
-
     configure_wood_in_market()
 end
 
