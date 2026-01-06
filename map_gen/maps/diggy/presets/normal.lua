@@ -35,6 +35,7 @@ local config = {
                 {name = 'firearm-magazine', count = 32},
                 {name = 'burner-mining-drill', count = 3},
                 {name = 'stone-furnace', count = 5},
+                {name = 'wood', count = 10},
             },
 
             -- 0.01 bonus equals 1% in game. This value is recommended to be tweaked for single player
@@ -364,6 +365,10 @@ local config = {
             enabled = true,
             load = function() return require('map_gen.maps.diggy.feature.shelob') end,
         },
+        torchlight = {
+            enabled = false,
+            load = function() return require('map_gen.maps.diggy.feature.torchlight') end,
+        }
     }
 }
 
