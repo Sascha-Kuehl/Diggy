@@ -1,1 +1,0 @@
-return require 'map_gen.maps.diggy.presets.danger_ores_BnB'

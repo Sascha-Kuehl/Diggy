@@ -1,1 +1,0 @@
-return require 'map_gen.maps.danger_ores.presets.danger_ore_industrial_revolution_3_grid_factory'
