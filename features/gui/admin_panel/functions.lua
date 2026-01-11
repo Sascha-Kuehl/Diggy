@@ -5,7 +5,7 @@ local Report = require 'features.report'
 
 -- == ACTIONS =================================================================
 
-local Actions = require 'features.admin_commands'
+local Actions = table.deepcopy(require 'features.admin_commands')
 
 ---@param filename? string
 ---@param player? LuaPlayer
@@ -70,6 +70,18 @@ function Actions.ban_player(target_name, reason, admin)
     return
   end
   Report.ban_player(player, reason, admin)
+end
+
+---@param target_name string
+---@param reason? string
+---@param admin? LuaPlayer
+function Actions.kick_player(target_name, reason, admin)
+  local player = game.get_player(target_name)
+  if not (player and player.valid) then
+    Game.player_print('Could not kick player: ' .. target_name, Color.fail, admin)
+    return
+  end
+  Report.kick_player(player, reason, admin)
 end
 
 ---@param target_player string

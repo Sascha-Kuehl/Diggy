@@ -19,6 +19,8 @@ local pcall = pcall
 
 local Command = {}
 
+local command_list = {}
+
 local deprecated_command_alternatives = {
     ['dc'] = 'sc',
     ['tpplayer'] = 'tp <player>',
@@ -108,7 +110,7 @@ function Command.add(command_name, options, callback)
         log_command = false
     end
 
-    if nil == options.allowed_by_player then
+    if options.allowed_by_player == nil then
         allowed_by_player = true
     end
 
@@ -271,6 +273,30 @@ function Command.add(command_name, options, callback)
             end
         end
     )
+
+    command_list[command_name] = {
+        name = command_name,
+        allowed_by_player = allowed_by_player,
+        allowed_by_server = allowed_by_server,
+        argument_list = argument_list,
+        argument_list_size = argument_list_size,
+        cheat_only = cheat_only,
+        debug_only = debug_only,
+        donator_only = donator_only,
+        extra = extra,
+        help = help_text,
+        log_command = log_command,
+        rank = required_rank,
+    }
+end
+
+function Command.list()
+    return table.deepcopy(command_list)
+end
+
+function Command.get(command_name)
+    local cmd = command_list[command_name]
+    return cmd and table.deepcopy(cmd)
 end
 
 --- Trigger messages on deprecated or defined commands, ignores the server
