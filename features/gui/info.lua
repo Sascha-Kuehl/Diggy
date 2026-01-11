@@ -91,11 +91,11 @@ end
 
 local function prepare_title()
     local welcome_title = [[
-111111  1111111 111111  111    111 1111111 11     11
-11   11 11      11   11 1111  1111 11      11     11
-111111  11111   11   11 11 1111 11 11111   11  1  11
-11   11 11      11   11 11  11  11 11      11 111 11
-11   11 1111111 111111  11      11 1111111  111 111
+111111  11  11111   11111  11   11
+11   11 11 11      11       11 11_
+11   11 11 11  111 11  111   111__
+11   11 11 11   11 11   11   11___
+111111  11  11111   11111   11____
 ]]
 
     local row = {}
@@ -117,7 +117,7 @@ local function prepare_title()
         elseif char == '1' then
             row[column_index] = true
             column_index = column_index + 1
-        elseif char == ' ' then
+        elseif char == ' ' or char == '_' then
             row[column_index] = false
             column_index = column_index + 1
         end
@@ -185,6 +185,18 @@ local function get_score_sprite()
     return 'achievement/there-is-no-spoon'
 end
 
+function add_link(parent, label_text, link)
+    local flow = parent.add { type = 'flow', direction = 'horizontal'}
+    local flow_style = flow.style
+    flow_style.horizontal_align = 'center'
+    flow_style.horizontally_stretchable = true
+    flow.add({ type = 'label', caption = label_text..':'}).style.font = 'default-bold'
+    local textbox = flow.add { type = 'text-box', text = link}
+    textbox.read_only = true
+    textbox.style.width = 315
+    textbox.style.height = 28
+end
+
 local pages = {
     {
         tab_button = function(parent)
@@ -222,49 +234,10 @@ local pages = {
             end
 
             header_label(parent, {'info.links_header'})
-            centered_label(parent, {'info.links_discord'})
-            local discord_textbox_flow = parent.add {type = 'flow'}
-            local discord_textbox_flow_style = discord_textbox_flow.style
-            discord_textbox_flow_style.horizontal_align = 'center'
-            discord_textbox_flow_style.horizontally_stretchable = true
-            discord_textbox_flow.add({type = 'label', caption = 'Discord: '}).style.font = 'default-bold'
-            local discord_textbox = discord_textbox_flow.add {type = 'text-box', text = 'https://refactorio.de/discord '}
-            discord_textbox.read_only = true
-            discord_textbox.style.width = 235
-            discord_textbox.style.height = 28
-            centered_label(parent, {'info.links_patreon'})
-            local patreon_flow = parent.add {type = 'flow', direction = 'horizontal'}
-            local patreon_flow_style = patreon_flow.style
-            patreon_flow_style.horizontal_align = 'center'
-            patreon_flow_style.horizontally_stretchable = true
-            patreon_flow.add({type = 'label', caption = 'Patreon:'}).style.font = 'default-bold'
-            local patreon_textbox = patreon_flow.add {type = 'text-box', text = 'https://www.patreon.com/redmew '}
-            patreon_textbox.read_only = true
-            patreon_textbox.style.width = 235
-            patreon_textbox.style.height = 28
-            centered_label(parent, {'info.links_saves'})
-            local save_textbox_flow = parent.add {type = 'flow'}
-            local save_textbox_flow_style = save_textbox_flow.style
-            save_textbox_flow_style.horizontal_align = 'center'
-            save_textbox_flow_style.horizontally_stretchable = true
-            save_textbox_flow.add({type = 'label', caption = 'Saves: '}).style.font = 'default-bold'
-            local save_textbox = save_textbox_flow.add {type = 'text-box', text = 'http://refactorio.de/saves/ '}
-            save_textbox.read_only = true
-            save_textbox.style.width = 235
-            save_textbox.style.height = 28
-            centered_label(parent, {'info.links_factoriomaps'})
-            local maps_textbox_flow = parent.add {type = 'flow'}
-            local maps_textbox_flow_style = maps_textbox_flow.style
-            maps_textbox_flow_style.horizontal_align = 'center'
-            maps_textbox_flow_style.horizontally_stretchable = true
-            maps_textbox_flow.add({type = 'label', caption = 'Maps: '}).style.font = 'default-bold'
-            local maps_textbox = maps_textbox_flow.add {
-                type = 'text-box',
-                text = 'https://factoriomaps.com/browse/redmew.html '
-            }
-            maps_textbox.read_only = true
-            maps_textbox.style.width = 315
-            maps_textbox.style.height = 28
+
+            add_link(parent, 'DieBohne - GitHub', 'https://github.com/Sascha-Kuehl/Diggy')
+            add_link(parent, 'RedMew - GitHub', 'https://github.com/Refactorio/RedMew')
+            add_link(parent, 'RedMew - Discord', 'https://refactorio.de/discord')
 
             parent.add({type = 'flow'}).style.height = 24
         end
