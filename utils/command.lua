@@ -29,7 +29,7 @@ local deprecated_command_alternatives = {
 }
 
 local notify_on_commands = {
-    ['version'] = 'RedMew has a version as well, accessible via /redmew-version',
+    ['version'] = 'Diggy has a version as well, accessible via /diggy-version',
     ['ban'] = 'In case your forgot: please remember to include a message on how to appeal a ban'
 }
 

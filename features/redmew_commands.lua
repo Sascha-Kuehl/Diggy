@@ -287,7 +287,7 @@ Command.add(
 )
 
 Command.add(
-    'redmew-version',
+    'diggy-version',
     {
         description = { 'command_description.redmew_version' },
         allowed_by_server = true

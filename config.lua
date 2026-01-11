@@ -185,8 +185,8 @@ storage.config = {
         show_info_at_start = true,
         -- prints messages when the player joins
         join_messages = {
-            'Welcome to this map created by the RedMew team. You can join our discord at: refactorio.de/discord',
-            'Click the infomation icon in the top left corner for server information and map details.'
+            'Welcome to this map created by the RedMew team and modified by DieBohne.',
+            'Click the information icon in the top left corner for server information and map details.'
         },
         cutscene = false,
         -- format is a table: {{message, weight}, {message, weight}}, where a higher weight has more chance to be shown
