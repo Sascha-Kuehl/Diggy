@@ -1,12 +1,17 @@
 local Global = require 'utils.global'
 
--- "map" from player index to {enabled, remaining_ticks, light_ids}
+--- Maps player index to light data: {enabled, remaining_ticks, light_ids}
+--- enabled (boolean): whether the player has the light turned on
+--- remaining_ticks (number): fuel remaining in ticks
+--- light_ids (table): array of 3 rendering IDs {main, effect1, effect2}
 local player_light_data = {}
 
--- "map" from corpse id to {remaining_ticks, light_ids}
+--- Maps corpse id to light data: {remaining_ticks, light_ids}
+--- remaining_ticks (number): fuel remaining in ticks
+--- light_ids (table): array of 3 rendering IDs {main, effect1, effect2}
 local corpse_light_data = {}
 
--- "map" from player index to torchlight inventory
+--- Maps player index to their torchlight inventory (LuaInventory)
 local torchlight_inventory = {}
 
 Global.register(
