@@ -27,6 +27,7 @@ function Torchlight.on_player_respawned(event)
 
     Torchlight.create_or_restore_player_light(player)
     Torchlight.update_player_light(player)
+    TorchlightGui.set_visible(player, true)
 end
 
 function Torchlight.on_player_joined_game(event)
@@ -44,27 +45,44 @@ function Torchlight.on_pre_player_died(event)
     player.character.get_main_inventory().find_empty_stack().transfer_stack(torchlight_stack)
 end
 
+function build_corpse_id(corpse)
+    return tostring(corpse.character_corpse_player_index) .. '-' .. tostring(corpse.character_corpse_tick_of_death)
+end
+
 function Torchlight.on_player_died(event)
     local player = game.get_player(event.player_index)
 
     player.character_inventory_slots_bonus = player.character_inventory_slots_bonus - 1
 
+    local corpses = player.surface.find_entities_filtered({name = 'character-corpse', position = player.position})
+    local corpse
+    for _, a_corpse in pairs(corpses) do
+        if (a_corpse.character_corpse_player_index == player.index and a_corpse.character_corpse_tick_of_death == event.tick) then
+            corpse = a_corpse
+            break
+        end
+    end
+    if (corpse == nil) then
+        return
+    end
+    local corpse_id = build_corpse_id(corpse)
+
     local light_data = TorchlightData.get_player_light_info(player.index)
-    local position = player.position
 
     local corpse_light_data = {
         remaining_ticks = light_data.remaining_ticks,
         light_ids = {
-            TorchlightLights.create_main_light(position, player.surface).id,
-            TorchlightLights.create_effect_light_1(position, player.surface).id,
-            TorchlightLights.create_effect_light_2(position, player.surface).id
+            TorchlightLights.create_main_light(corpse, player.surface).id,
+            TorchlightLights.create_effect_light_1(corpse, player.surface).id,
+            TorchlightLights.create_effect_light_2(corpse, player.surface).id
         }
     }
-    TorchlightData.set_corpse_light_data(position, corpse_light_data)
+    TorchlightData.set_corpse_light_data(corpse_id, corpse_light_data)
     
     light_data.remaining_ticks = 0
     Torchlight.update_player_light(player)
-    Torchlight.update_corpse_light(position)
+    Torchlight.update_corpse_light(corpse_id)
+    TorchlightGui.set_visible(player, false)
 end
 
 function Torchlight.on_tick()
@@ -100,8 +118,7 @@ function Torchlight.on_torchlight_fuel_pressed(event)
 end
 
 function Torchlight.create_or_restore_player_light(player)
-    local player_light_data = TorchlightData.get_player_light_data()
-    local light_data = player_light_data[player.index]
+    local light_data = TorchlightData.get_player_light_info(player.index)
 
     if (light_data == nil) then
         local main_light = TorchlightLights.create_main_light(player.character, player.surface)
@@ -189,8 +206,8 @@ function Torchlight.update_player_lights_on_tick()
     end
 end
 
-function Torchlight.update_corpse_light(position)
-    local light_data = TorchlightData.get_corpse_light_info(position)
+function Torchlight.update_corpse_light(corpse_id)
+    local light_data = TorchlightData.get_corpse_light_info(corpse_id)
 
     if (light_data == nil) then
         return
@@ -203,14 +220,52 @@ function Torchlight.update_corpse_light(position)
 
     -- light burned out
     TorchlightLights.destroy_lights(light_data.light_ids)
-    TorchlightData.remove_corpse_light_data(position)
+    TorchlightData.remove_corpse_light_data(corpse_id)
 end
 
 function Torchlight.update_corpse_lights_on_tick()
     local corpse_light_data = TorchlightData.get_corpse_light_data()
-    for position, light_data in pairs(corpse_light_data) do
+    for corpse_id, light_data in pairs(corpse_light_data) do
         light_data.remaining_ticks = light_data.remaining_ticks - TICK_INTERVAL
-        Torchlight.update_corpse_light(position)
+        Torchlight.update_corpse_light(corpse_id)
+    end
+end
+
+function move_wood_to_torchlight_inventory(player, corpse)
+    local corpse_inventory = corpse.get_inventory(defines.inventory.character_corpse)
+    local torchlight_inventory = TorchlightData.get_player_inventory(player.index)
+    local wood_stack = corpse_inventory.find_item_stack('wood')
+    if (wood_stack and wood_stack.valid_for_read) then
+        torchlight_inventory[1].transfer_stack(wood_stack)
+        TorchlightGui.update_inventory_button(player, torchlight_inventory)
+    end
+end
+
+function takeover_remaining_torchlight_time(player, corpse)
+    local corpse_id = build_corpse_id(corpse)
+    local corpse_light_data = TorchlightData.get_corpse_light_info(corpse_id)
+    local player_light_data = TorchlightData.get_player_light_info(player.index)
+    if (not corpse_light_data or not player_light_data) then
+        return
+    end
+
+    player_light_data.remaining_ticks = player_light_data.remaining_ticks + corpse_light_data.remaining_ticks
+    TorchlightData.remove_corpse_light_data(corpse_id)
+    TorchlightGui.update_torchlight_progressbar(player, player_light_data.remaining_ticks, AFTERBURNER_TICKS, TICKS_PER_WOOD)
+end
+
+function Torchlight.on_player_mined_entity(event)
+    if (event.entity and event.entity.type == 'character-corpse') then
+        local player = game.get_player(event.player_index)
+        takeover_remaining_torchlight_time(player, event.entity)
+        Torchlight.update_player_light(player)
+    end
+end
+
+function Torchlight.on_pre_player_mined_item(event)
+    if (event.entity and event.entity.type == 'character-corpse') then
+        local player = game.get_player(event.player_index)
+        move_wood_to_torchlight_inventory(player, event.entity)
     end
 end
 
@@ -223,6 +278,8 @@ function Torchlight.register()
     Event.add(defines.events.on_tick, Torchlight.on_tick)
     Event.add(defines.events.on_player_display_resolution_changed, Torchlight.on_player_display_resolution_changed)
     Event.add(defines.events.on_player_display_scale_changed, Torchlight.on_player_display_scale_changed)
+    Event.add(defines.events.on_player_mined_entity, Torchlight.on_player_mined_entity)
+    Event.add(defines.events.on_pre_player_mined_item , Torchlight.on_pre_player_mined_item )
 
     TorchlightGui.register_click_handlers(Torchlight.on_torchlight_button_pressed, Torchlight.on_torchlight_fuel_pressed)
 end

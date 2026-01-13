@@ -12,6 +12,10 @@ function TorchlightGui.is_light_enabled(player)
     return player.gui.screen[torchlight_frame_name][torchlight_enabled_button_name].toggled
 end
 
+function TorchlightGui.set_visible(player, visible)
+    player.gui.screen[torchlight_frame_name].visible = visible
+end
+
 function TorchlightGui.register_click_handlers(on_enabled_button_clicked, on_inventory_button_clicked)
     Gui.on_click(torchlight_enabled_button_name, on_enabled_button_clicked)
     Gui.on_click(torchlight_inventory_button_name, on_inventory_button_clicked)

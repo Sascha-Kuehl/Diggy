@@ -69,7 +69,7 @@ end
 function TorchlightLights.destroy_lights(light_ids)
     for _, id in pairs(light_ids) do
         local light_rendering = rendering.get_object_by_id(id)
-        if light_rendering then
+        if (light_rendering) then
             light_rendering.destroy()
         end
     end

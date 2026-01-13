@@ -3,7 +3,7 @@ local Global = require 'utils.global'
 -- "map" from player index to {enabled, remaining_ticks, light_ids}
 local player_light_data = {}
 
--- "map" from position to {remaining_ticks, light_ids}
+-- "map" from corpse id to {remaining_ticks, light_ids}
 local corpse_light_data = {}
 
 -- "map" from player index to torchlight inventory
@@ -40,8 +40,8 @@ function TorchlightData.set_player_light_data(player_index, data)
     player_light_data[player_index] = data
 end
 
-function TorchlightData.set_corpse_light_data(position, data)
-    corpse_light_data[position] = data
+function TorchlightData.set_corpse_light_data(corpse_id, data)
+    corpse_light_data[corpse_id] = data
 end
 
 function TorchlightData.set_torchlight_inventory(player_index, inventory)
@@ -52,8 +52,8 @@ function TorchlightData.get_player_light_info(player_index)
     return player_light_data[player_index]
 end
 
-function TorchlightData.get_corpse_light_info(position)
-    return corpse_light_data[position]
+function TorchlightData.get_corpse_light_info(corpse_id)
+    return corpse_light_data[corpse_id]
 end
 
 function TorchlightData.get_player_inventory(player_index)
@@ -75,8 +75,8 @@ function TorchlightData.create_corpse_light_data(remaining_ticks, light_ids)
     }
 end
 
-function TorchlightData.remove_corpse_light_data(position)
-    corpse_light_data[position] = nil
+function TorchlightData.remove_corpse_light_data(corpse_id)
+    corpse_light_data[corpse_id] = nil
 end
 
 return TorchlightData
