@@ -1,7 +1,6 @@
 local Global = require 'utils.global'
 
---- Maps player index to light data: {enabled, remaining_ticks, light_ids}
---- enabled (boolean): whether the player has the light turned on
+--- Maps player index to light data: {remaining_ticks, light_ids}
 --- remaining_ticks (number): fuel remaining in ticks
 --- light_ids (table): array of 3 rendering IDs {main, effect1, effect2}
 local player_light_data = {}
@@ -67,7 +66,6 @@ end
 
 function TorchlightData.create_player_light_data(light_ids)
     return {
-        enabled = true,
         remaining_ticks = 0,
         light_ids = light_ids
     }

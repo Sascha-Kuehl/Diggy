@@ -91,8 +91,6 @@ end
 
 function Torchlight.on_torchlight_button_pressed(event)
     local player = event.player
-    local light_data = TorchlightData.get_player_light_info(player.index)
-    light_data.enabled = TorchlightGui.is_light_enabled(player)
     Torchlight.update_player_light(player)
 end
 
@@ -139,10 +137,11 @@ function Torchlight.update_player_light(player)
 
     local light_data = TorchlightData.get_player_light_info(player.index)
     local inventory = TorchlightData.get_player_inventory(player.index)
+    local enabled = TorchlightGui.is_light_enabled(player)
 
     -- the light is burning and has enough "fuel"
     -- or player has deactivated the light, so we will not burn more wood
-    if light_data.remaining_ticks > AFTERBURNER_TICKS or not light_data.enabled then
+    if light_data.remaining_ticks > AFTERBURNER_TICKS or not enabled then
         TorchlightLights.update_light(light_data, light_data.remaining_ticks, AFTERBURNER_TICKS)
         return
     end
@@ -169,8 +168,9 @@ function Torchlight.update_player_lights_on_tick()
         Torchlight.update_player_light(player)
         TorchlightGui.update_torchlight_progressbar(player, light_data.remaining_ticks, AFTERBURNER_TICKS, TICKS_PER_WOOD)
 
+        local enabled = TorchlightGui.is_light_enabled(player)
         -- player runs out of wood so we show a message
-        if light_data.enabled
+        if enabled
                 and light_data.remaining_ticks > 0
                 and light_data.remaining_ticks < AFTERBURNER_TICKS
                 and light_data.remaining_ticks % 180 == 0 then
