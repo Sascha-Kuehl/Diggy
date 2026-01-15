@@ -2,10 +2,6 @@ local Table = require 'utils.table'
 
 local InventoryUtil = {}
 
-function is_stack_empty(itemStack)
-    return not itemStack.valid_for_read
-end
-
 function isLeftClick(click_event)
     return click_event.button == defines.mouse_button_type.left
 end
@@ -76,7 +72,7 @@ function pickup_stack_to_cursor(player, source_stack, cursor_stack, click_event)
 end
 
 function push_stack_from_cursor(player, source_stack, cursor_stack, click_event)
-    if (isLeftClick(click_event) and (is_stack_empty(source_stack) or cursor_stack.name ~= source_stack.name or cursor_stack.quality ~= source_stack.quality)) then
+    if (isLeftClick(click_event) and (source_stack.count == 0 or cursor_stack.name ~= source_stack.name or cursor_stack.quality ~= source_stack.quality)) then
         source_stack.swap_stack(cursor_stack)
         player.play_sound({path = 'item-drop/'..source_stack.name})
         return
@@ -103,7 +99,7 @@ function InventoryUtil.handle_inventory_slot_click(source_inventory, source_stac
     end
 
     if (click_event.control) then
-        if (is_stack_empty(source_stack)) then
+        if (source_stack.count == 0) then
             transfer_whole_inventory_to_main(player, source_inventory, click_event)
         else
             transfer_all_stacks_to_main(player, source_inventory, source_stack, click_event)
@@ -111,7 +107,10 @@ function InventoryUtil.handle_inventory_slot_click(source_inventory, source_stac
     elseif (click_event.shift) then
         transfer_stack_to_main(player, source_inventory, source_stack, click_event)
     else
-        if (is_stack_empty(cursor_stack)) then
+        if (cursor_stack.count == 0) then
+            if (source_stack.count == 0) then
+                return
+            end
             pickup_stack_to_cursor(player, source_stack, cursor_stack, click_event)
         else
             if (not Table.contains(accepted_items, cursor_stack.name)) then
