@@ -8,7 +8,7 @@ local inventory_button_name = Gui.uid_name()
 local progressbar_name = Gui.uid_name()
 
 local BUTTON_SIZE = 38
-local FRAME_X_OFFSET = 190
+local FRAME_X_OFFSET = 1872
 local FRAME_Y_OFFSET = 96
 
 local TorchlightGui = {}
