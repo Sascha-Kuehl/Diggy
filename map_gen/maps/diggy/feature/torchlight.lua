@@ -217,6 +217,7 @@ function Torchlight.update_player_light(player)
     local light_data = TorchlightData.get_player_light_info(player.index)
     local is_enabled = TorchlightGui.is_light_enabled(player)
     if not is_enabled then
+        TorchlightLights.update_light(light_data, is_enabled)
         return
     end
 
