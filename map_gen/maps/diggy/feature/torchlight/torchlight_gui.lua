@@ -41,7 +41,7 @@ function TorchlightGui.update_torchlight_progressbar(player, light_ticks, light_
     local progressbar = player.gui.screen[frame_name][outer_flow_name][inner_flow_name][progressbar_name]
     local remaining_ticks = math.max(0, light_ticks_total - light_ticks)
     progressbar.value = light_ticks_total > 0 and remaining_ticks / light_ticks_total or 0
-    progressbar.tooltip = string.format('%.1f sec', remaining_ticks / 60)
+    progressbar.tooltip = string.format('%d sec', remaining_ticks / 60)
 end
 
 -- Updates the inventory button to show current fuel type and count

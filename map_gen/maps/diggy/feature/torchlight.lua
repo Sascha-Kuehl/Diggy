@@ -201,7 +201,9 @@ function Torchlight.update_player_light(player)
             item_stack.count = item_stack.count - 1
             light_data.light_ticks = 0
             light_data.light_ticks_total = TICKS_PER_WOOD
-            light_data.intensity_per_tick = 1 / FADE_IN_TICKS
+            if (light_data.intensity < 1) then
+                light_data.intensity_per_tick = 1 / FADE_IN_TICKS
+            end
             TorchlightGui.update_inventory_button(player, inventory)
         else
             light_data.light_ticks = 0
@@ -266,7 +268,11 @@ function Torchlight.takeover_remaining_torchlight_time(player, corpse)
         return
     end
 
-    player_light_data.light_ticks_total = corpse_light_data.light_ticks_total - corpse_light_data.light_ticks
+    player_light_data.light_ticks = corpse_light_data.light_ticks
+    player_light_data.light_ticks_total = corpse_light_data.light_ticks_total
+    player_light_data.intensity = corpse_light_data.intensity
+    player_light_data.intensity_per_tick = corpse_light_data.intensity_per_tick
+
     TorchlightData.remove_corpse_light_data(corpse_id)
     TorchlightGui.update_torchlight_progressbar(player, player_light_data.light_ticks, player_light_data.light_ticks_total)
 end
