@@ -1,4 +1,3 @@
-local LIGHT_SCALE = 2.0
 local LIGHT_SCALE_EFFECT = 1.15
 local MAIN_LIGHT_COLOR = { 250, 200, 120 }
 local EFFECT_LIGHT_1_COLOR = { 170, 40, 0 }
@@ -44,17 +43,17 @@ function TorchlightLights.update_light(light_data, enabled)
         rendering.get_object_by_id(light_data.light_ids[3])
     }
 
-    local should_show = light_data.intensity >= 0.001 and (enabled or light_data.intensity_per_tick ~= 0) and 
-                       (light_data.light_ticks < light_data.light_ticks_total or light_data.intensity_per_tick ~= 0)
+    local should_show = light_data.current_scale >= 0.001 and (enabled or light_data.scale_per_tick ~= 0) and
+                       (light_data.light_ticks < light_data.light_ticks_total or light_data.scale_per_tick ~= 0)
     
     for _, light in ipairs(lights) do
         light.visible = should_show
     end
 
     if should_show then
-        lights[1].scale = LIGHT_SCALE * light_data.intensity
-        lights[2].scale = LIGHT_SCALE * LIGHT_SCALE_EFFECT * light_data.intensity
-        lights[3].scale = LIGHT_SCALE * LIGHT_SCALE_EFFECT * light_data.intensity
+        lights[1].scale = light_data.current_scale
+        lights[2].scale = light_data.current_scale * LIGHT_SCALE_EFFECT
+        lights[3].scale = light_data.current_scale * LIGHT_SCALE_EFFECT
     end
 end
 

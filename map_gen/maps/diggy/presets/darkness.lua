@@ -367,6 +367,11 @@ local config = {
         torchlight = {
             enabled = true,
             load = function() return require('map_gen.maps.diggy.feature.torchlight') end,
+            initial_items = {name = 'wood', count = 10},
+            burn_items = {
+                {item = 'wood', duration = 60*60, scale = 2.0},
+                {item = 'crude-oil-barrel', duration = 60*60*5, scale = 4.0}
+            }
         }
     }
 }
