@@ -9,83 +9,66 @@ local EFFECT_LIGHT_2_BLINK = 13
 
 local TorchlightLights = {}
 
---- Creates the main bright light for the torchlight
---- @param target LuaEntity to attach light to
---- @param surface LuaSurface to render on
---- @return LuaRenderObject the created light rendering object
+-- Create a light with specified config
+local function create_light(color, blink_interval, target, surface)
+    return rendering.draw_light {
+        sprite = 'utility/light_medium',
+        color = color,
+        surface = surface,
+        target = target,
+        intensity = blink_interval and EFFECT_LIGHT_INTENSITY or 1,
+        blink_interval = blink_interval
+    }
+end
+
+-- Creates the main bright light
 function TorchlightLights.create_main_light(target, surface)
-    return rendering.draw_light {
-        sprite = 'utility/light_medium',
-        color = MAIN_LIGHT_COLOR,
-        surface = surface,
-        target = target,
-    }
+    return create_light(MAIN_LIGHT_COLOR, nil, target, surface)
 end
 
---- Creates the first effect light (reddish glow with blinking)
---- @param target LuaEntity to attach light to
---- @param surface LuaSurface to render on
---- @return LuaRenderObject the created light rendering object
+-- Creates the first effect light (reddish glow with blinking)
 function TorchlightLights.create_effect_light_1(target, surface)
-    return rendering.draw_light {
-        sprite = 'utility/light_medium',
-        color = EFFECT_LIGHT_1_COLOR,
-        surface = surface,
-        target = target,
-        intensity = EFFECT_LIGHT_INTENSITY,
-        blink_interval = EFFECT_LIGHT_1_BLINK
-    }
+    return create_light(EFFECT_LIGHT_1_COLOR, EFFECT_LIGHT_1_BLINK, target, surface)
 end
 
---- Creates the second effect light (orange glow with different blinking)
---- @param target LuaEntity to attach light to
---- @param surface LuaSurface to render on
---- @return LuaRenderObject the created light rendering object
+-- Creates the second effect light (orange glow with different blinking)
 function TorchlightLights.create_effect_light_2(target, surface)
-    return rendering.draw_light {
-        sprite = 'utility/light_medium',
-        color = EFFECT_LIGHT_2_COLOR,
-        surface = surface,
-        target = target,
-        intensity = EFFECT_LIGHT_INTENSITY,
-        blink_interval = EFFECT_LIGHT_2_BLINK
-    }
+    return create_light(EFFECT_LIGHT_2_COLOR, EFFECT_LIGHT_2_BLINK, target, surface)
 end
 
+-- Updates the visibility and scale of the torchlight's lights
 function TorchlightLights.update_light(light_data, enabled)
-    local main_light = rendering.get_object_by_id(light_data.light_ids[1])
-    local effect_light_1 = rendering.get_object_by_id(light_data.light_ids[2])
-    local effect_light_2 = rendering.get_object_by_id(light_data.light_ids[3])
+    local lights = {
+        rendering.get_object_by_id(light_data.light_ids[1]),
+        rendering.get_object_by_id(light_data.light_ids[2]),
+        rendering.get_object_by_id(light_data.light_ids[3])
+    }
 
-    if light_data.intensity < 0.001 or ((not enabled or light_data.light_ticks >= light_data.light_ticks_total) and light_data.intensity_per_tick == 0) then
-        main_light.visible = false
-        effect_light_1.visible = false
-        effect_light_2.visible = false
-        return
+    local should_show = light_data.intensity >= 0.001 and (enabled or light_data.intensity_per_tick ~= 0) and 
+                       (light_data.light_ticks < light_data.light_ticks_total or light_data.intensity_per_tick ~= 0)
+    
+    for _, light in ipairs(lights) do
+        light.visible = should_show
     end
 
-    main_light.visible = true
-    effect_light_1.visible = true
-    effect_light_2.visible = true
-
-    main_light.scale = LIGHT_SCALE * light_data.intensity
-    effect_light_1.scale = LIGHT_SCALE * LIGHT_SCALE_EFFECT * light_data.intensity
-    effect_light_2.scale = LIGHT_SCALE * LIGHT_SCALE_EFFECT * light_data.intensity
+    if should_show then
+        lights[1].scale = LIGHT_SCALE * light_data.intensity
+        lights[2].scale = LIGHT_SCALE * LIGHT_SCALE_EFFECT * light_data.intensity
+        lights[3].scale = LIGHT_SCALE * LIGHT_SCALE_EFFECT * light_data.intensity
+    end
 end
 
+-- Destroys all light rendering objects by their IDs
 function TorchlightLights.destroy_lights(light_ids)
-    for _, id in pairs(light_ids) do
-        local light_rendering = rendering.get_object_by_id(id)
-        if light_rendering then
-            light_rendering.destroy()
+    for _, id in ipairs(light_ids) do
+        local light = rendering.get_object_by_id(id)
+        if light then
+            light.destroy()
         end
     end
 end
 
---- Creates light rendering IDs for a target entity
---- @param target LuaEntity to attach lights to
---- @param surface LuaSurface to render on
---- @return table array of light IDs {main_light_id, effect_light_1_id, effect_light_2_id}
+-- Creates light rendering IDs for a target entity
 function TorchlightLights.create_light_ids(target, surface)
     return {
         TorchlightLights.create_main_light(target, surface).id,

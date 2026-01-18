@@ -4,18 +4,15 @@ local player_light_data = {}
 local corpse_light_data = {}
 local torchlight_inventory = {}
 
-Global.register(
-        {
-            player_light_data = player_light_data,
-            corpse_light_data = corpse_light_data,
-            torchlight_inventory = torchlight_inventory
-        },
-        function(tbl)
-            player_light_data = tbl.player_light_data
-            corpse_light_data = tbl.corpse_light_data
-            torchlight_inventory = tbl.torchlight_inventory
-        end
-)
+Global.register({
+    player_light_data = player_light_data,
+    corpse_light_data = corpse_light_data,
+    torchlight_inventory = torchlight_inventory
+}, function(tbl)
+    player_light_data = tbl.player_light_data
+    corpse_light_data = tbl.corpse_light_data
+    torchlight_inventory = tbl.torchlight_inventory
+end)
 
 local TorchlightData = {}
 

@@ -54,36 +54,35 @@ end
 
 function Torchlight.find_corpse(player, tick)
     local corpses = player.surface.find_entities_filtered({name = 'character-corpse', position = player.position})
-    for _, a_corpse in pairs(corpses) do
-        if a_corpse.character_corpse_player_index == player.index and a_corpse.character_corpse_tick_of_death == tick then
-            return a_corpse
+    for _, corpse in pairs(corpses) do
+        if corpse.character_corpse_player_index == player.index and corpse.character_corpse_tick_of_death == tick then
+            return corpse
         end
     end
-    return nil;
 end
 
 function Torchlight.on_player_died(event)
     local player = game.get_player(event.player_index)
-
     player.character_inventory_slots_bonus = player.character_inventory_slots_bonus - 1
 
     local corpse = Torchlight.find_corpse(player, event.tick)
     if not corpse then
         return
     end
-    local corpse_id = Torchlight.build_corpse_id(corpse)
 
+    local corpse_id = Torchlight.build_corpse_id(corpse)
     local light_data = TorchlightData.get_player_light_info(player.index)
 
-    local corpse_light_data = {
+    -- Transfer remaining light to corpse
+    TorchlightData.set_corpse_light_data(corpse_id, {
         light_ticks = 0,
         light_ticks_total = light_data.light_ticks_total - light_data.light_ticks,
         intensity = light_data.intensity,
         intensity_per_tick = light_data.intensity_per_tick,
         light_ids = TorchlightLights.create_light_ids(corpse, player.surface)
-    }
-    TorchlightData.set_corpse_light_data(corpse_id, corpse_light_data)
+    })
 
+    -- Reset player light data
     light_data.light_ticks = 0
     light_data.light_ticks_total = 0
     light_data.intensity = 0
@@ -145,14 +144,8 @@ end
 
 function Torchlight.on_torchlight_button_pressed(event)
     local player = event.player
-    local enabled = TorchlightGui.is_light_enabled(player)
     local light_data = TorchlightData.get_player_light_info(player.index)
-    if enabled then
-        light_data.intensity_per_tick = 1 / FADE_IN_TICKS
-    else
-        light_data.intensity_per_tick = -1 / FADE_OUT_TICKS
-    end
-
+    light_data.intensity_per_tick = TorchlightGui.is_light_enabled(player) and (1 / FADE_IN_TICKS) or (-1 / FADE_OUT_TICKS)
     Torchlight.update_player_light(player)
 end
 
@@ -175,17 +168,13 @@ function Torchlight.on_torchlight_fuel_pressed(event)
 end
 
 function Torchlight.create_player_light_data(player)
-    local light_ids = TorchlightLights.create_light_ids(player.character, player.surface)
-    local light_data = {
-        light_ids = light_ids,
-
+    TorchlightData.set_player_light_data(player.index, {
+        light_ids = TorchlightLights.create_light_ids(player.character, player.surface),
         light_ticks = 0,
         light_ticks_total = 0,
-
         intensity = 0,
-        intensity_per_tick = 0, -- positive number -> fade in, negative number -> fade out, 0 for idle
-    }
-    TorchlightData.set_player_light_data(player.index, light_data)
+        intensity_per_tick = 0  -- positive = fade in, negative = fade out, 0 = idle
+    })
 end
 
 function Torchlight.create_player_torchlight_inventory(player)
@@ -200,21 +189,19 @@ function Torchlight.update_player_light(player)
     end
 
     local light_data = TorchlightData.get_player_light_info(player.index)
-    local inventory = TorchlightData.get_player_inventory(player.index)
-    local isEnabled = TorchlightGui.is_light_enabled(player)
-
-    if not isEnabled then
+    local is_enabled = TorchlightGui.is_light_enabled(player)
+    if not is_enabled then
         return
     end
 
     if light_data.light_ticks >= light_data.light_ticks_total then
+        local inventory = TorchlightData.get_player_inventory(player.index)
         local item_stack = inventory[1]
         if item_stack.count > 0 then
             item_stack.count = item_stack.count - 1
             light_data.light_ticks = 0
             light_data.light_ticks_total = TICKS_PER_WOOD
             light_data.intensity_per_tick = 1 / FADE_IN_TICKS
-
             TorchlightGui.update_inventory_button(player, inventory)
         else
             light_data.light_ticks = 0
@@ -223,7 +210,7 @@ function Torchlight.update_player_light(player)
         end
     end
 
-    TorchlightLights.update_light(light_data, isEnabled)
+    TorchlightLights.update_light(light_data, is_enabled)
 end
 
 function Torchlight.update_player_lights_on_tick()
@@ -240,7 +227,6 @@ end
 
 function Torchlight.update_corpse_light(corpse_id)
     local light_data = TorchlightData.get_corpse_light_info(corpse_id)
-
     if not light_data then
         return
     end
@@ -250,7 +236,7 @@ function Torchlight.update_corpse_light(corpse_id)
         return
     end
 
-    -- light burned out -> start fade out
+    -- Light burned out, start fade out
     light_data.intensity_per_tick = -1 / FADE_OUT_TICKS
 end
 
@@ -276,7 +262,7 @@ function Torchlight.takeover_remaining_torchlight_time(player, corpse)
     local corpse_id = Torchlight.build_corpse_id(corpse)
     local corpse_light_data = TorchlightData.get_corpse_light_info(corpse_id)
     local player_light_data = TorchlightData.get_player_light_info(player.index)
-    if not corpse_light_data or not player_light_data then
+    if not (corpse_light_data and player_light_data) then
         return
     end
 
@@ -315,31 +301,24 @@ function Torchlight.register()
     TorchlightGui.register_click_handlers(Torchlight.on_torchlight_button_pressed, Torchlight.on_torchlight_fuel_pressed)
 end
 
---- Ensures wood is available in the market at the configured level and price
+-- Ensure wood is available in the market at configured level and price
 function Torchlight.configure_wood_in_market()
-    local redmew_config = storage.config
-    for _, entry in pairs(redmew_config.experience.unlockables) do
+    local unlockables = storage.config.experience.unlockables
+    for _, entry in pairs(unlockables) do
         if entry.name == 'wood' then
             entry.level = 1
             entry.price = 4
             return
         end
     end
-    table.insert(redmew_config.experience.unlockables, {
-        level = 1,
-        price = 4,
-        name = 'wood'
-    })
+    table.insert(unlockables, { level = 1, price = 4, name = 'wood' })
 end
 
 function Torchlight.on_init()
     Torchlight.configure_wood_in_market()
 end
 
---- Restores missing light rendering objects from stored IDs
---- @param light_data table containing light_ids array
---- @param target LuaEntity to attach lights to
---- @param surface LuaSurface to render on
+-- Recreate light rendering objects
 function Torchlight.recreate_lights(player)
     local light_data = TorchlightData.get_player_light_info(player.index)
     light_data.light_ids = TorchlightLights.create_light_ids(player.character, player.surface)
